@@ -1,0 +1,75 @@
+﻿@model Auth0.IdinConnectorSample.Models.DirectoryModel
+
+@{
+    ViewBag.Title = "DirectoryResponse";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Directory</h2>
+<hr />
+<div class="row">
+    <form class="form-horizontal" method="post" role="form">
+        <div class="form-group">
+            <div class="col-xs-5">
+                @Html.Label("BankId.Acquirer.DirectoryUrl", "BankId.Acquirer.DirectoryUrl")
+                @Html.TextBoxFor(m => m.DirectoryUrl, new { @class = "form-control" })
+            </div>
+        </div>
+        <button type="button" class="btn btn-danger" data-toggle="collapse" data-target="#demo">Toggle more options</button>
+        <div id="demo" class="collapse">
+            <div class="form-group">
+                <div class="col-xs-3">
+                    @Html.Label("BankId.Merchant.MerchantID", "BankId.Merchant.MerchantID")
+                    @Html.TextBoxFor(m => m.MerchantId, new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-xs-3">
+                    @Html.Label("BankId.Merchant.SubID", "BankId.Merchant.SubID")
+                    @Html.TextBoxFor(m => m.SubId, new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-xs-3">
+                    @Html.Label("BankId.Merchant.ReturnUrl", "BankId.Merchant.ReturnUrl")
+                    @Html.TextBoxFor(m => m.ReturnUrl, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Send directory request</button>
+    </form>
+</div>
+<hr />
+
+@if (!String.IsNullOrEmpty(Model.CustomError))
+{
+    <div class="row alert alert-danger" role="alert">
+        <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+        <p>Custom error: @Model.CustomError</p>
+    </div>
+}
+
+
+@if (Model.Source != null && Model.Source.IsError)
+{
+    <div class="row alert alert-danger" role="alert">
+        <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+
+        <p>Error Code: @Model.Source.Error.ErrorCode</p>
+        <p>Message: @Model.Source.Error.ErrorMessage</p>
+        <p>Details: @Model.Source.Error.ErrorDetails</p>
+        <p>Consumer Message: @Model.Source.Error.ConsumerMessage</p>
+        <p>Suggested Action: @Model.Source.Error.SuggestedAction</p>
+    </div>
+}
+
+@if (Model.Source != null && !Model.Source.IsError)
+{
+    <div class="row">
+        @Html.DropDownListFor(m => m.Source.Issuers, new SelectList(Model.Source.Issuers, "Id", "Name", "Country", 0), new { @class = "form-control", @name = "issuer" })
+    </div>
+    <hr />
+    <div class="row">
+        <textarea readonly="true" class="form-control" rows="10">@Model.Source.RawMessage</textarea>
+    </div>
+}

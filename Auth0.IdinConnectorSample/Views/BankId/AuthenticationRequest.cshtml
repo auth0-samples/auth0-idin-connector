@@ -1,0 +1,74 @@
+﻿@model Auth0.IdinConnectorSample.Models.TransactionModel
+
+@{
+    ViewBag.Title = "AuthenticationRequest";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>AuthenticationRequest</h2>
+<hr />
+<div class="row">
+    <form class="form-horizontal" method="post" role="form">
+        <div class="form-group">
+            <div class="col-xs-5">
+                @Html.Label("BankId.Acquirer.TransactionUrl", "BankId.Acquirer.TransactionUrl")
+                @Html.TextBoxFor(m => m.AcquirerTransactionURL, new { @class = "form-control" })
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-xs-3">
+                @Html.Label("issuerID", "issuerID")
+                @Html.TextBoxFor(m => m.IssuerID, new { @class = "form-control" })
+            </div>
+            <div class="col-xs-3">
+                @Html.Label("expirationPeriod", "expirationPeriod")
+                @Html.TextBoxFor(m => m.ExpirationPeriod, new { @class = "form-control" })
+            </div>
+            <div class="col-xs-3">
+                @Html.Label("language", "language")
+                @Html.DropDownListFor(m => m.Language, new SelectList(new[] { "en", "nl" }, "en"), new { @class = "form-control" })
+            </div>
+            <div class="col-xs-3">
+                @Html.Label("entranceCode", "entranceCode")
+                @Html.TextBoxFor(m => m.EntranceCode, new { @class = "form-control" })
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-xs-3">
+                @Html.Label("BankId.MerchantReference", "BankId.MerchantReference")
+                @Html.TextBoxFor(m => m.MerchantReference, new { @class = "form-control" })
+            </div>
+            <div class="col-xs-3">
+                @Html.Label("BankId.RequestedServiceId", "BankId.RequestedServiceId")
+                @Html.TextBoxFor(m => m.RequestedServiceId, new { @class = "form-control" })
+            </div>
+            <div class="col-xs-3">
+                @Html.Label("BankId.LOA", "BankId.LOA")
+                @Html.DropDownListFor(m => m.LOA, new SelectList(new[] { "nl:bvn:bankid:1.0:loa2", "nl:bvn:bankid:1.0:loa3" }, "nl:bvn:bankid:1.0:loa2"), new { @class = "form-control" })
+            </div>
+        </div>
+        <button type="button" class="btn btn-danger" data-toggle="collapse" data-target="#demo">Toggle more options</button>
+        <div id="demo" class="collapse">
+            <div class="form-group">
+                <div class="col-xs-3">
+                    @Html.Label("BankId.Merchant.MerchantID", "BankId.Merchant.MerchantID")
+                    @Html.TextBoxFor(m => m.MerchantId, new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-xs-3">
+                    @Html.Label("BankId.Merchant.SubID", "BankId.Merchant.SubID")
+                    @Html.TextBoxFor(m => m.SubId, new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-xs-3">
+                    @Html.Label("BankId.Merchant.ReturnUrl", "BankId.Merchant.ReturnUrl")
+                    @Html.TextBoxFor(m => m.ReturnUrl, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Send authentication request</button>
+    </form>
+</div>
+<hr />

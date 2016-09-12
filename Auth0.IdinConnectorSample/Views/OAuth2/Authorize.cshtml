@@ -1,0 +1,17 @@
+﻿@model Auth0.IdinConnectorSample.Models.AuthorizeModel
+
+@{
+    ViewBag.Title = "Issuer Selection";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Issuer Selection</h2>
+<p>Please select the issuing bank to log into:</p>
+
+<ul>
+    @foreach (var issuer in Model.Issuers)
+    {
+        <li><a href="@issuer.AuthorizeUrl">@issuer.Name</a> (@issuer.Country)</li>
+    }
+</ul>
+

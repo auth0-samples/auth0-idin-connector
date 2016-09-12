@@ -1,0 +1,110 @@
+﻿@using BankId.Merchant.Library
+@model Auth0.IdinConnectorSample.Models.StatusModel
+
+@{
+    ViewBag.Title = "Response";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Response</h2>
+<hr />
+<div class="row">
+    <form class="form-horizontal" method="post" role="form">
+        <div class="form-group">
+            <div class="col-xs-5">
+                @Html.Label("BankId.Acquirer.StatusUrl", "BankId.Acquirer.StatusUrl")
+                @Html.TextBoxFor(m => m.StatusUrl, new { @class = "form-control" })
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-xs-3">
+                @Html.Label("TransactionId", "TransactionId")
+                @Html.TextBoxFor(m => m.TransactionId, new { @class = "form-control" })
+            </div>
+        </div>
+        <button type="button" class="btn btn-danger" data-toggle="collapse" data-target="#demo">Toggle more options</button>
+        <div id="demo" class="collapse">
+            <div class="form-group">
+                <div class="col-xs-3">
+                    @Html.Label("BankId.Merchant.MerchantID", "BankId.Merchant.MerchantID")
+                    @Html.TextBoxFor(m => m.MerchantId, new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-xs-3">
+                    @Html.Label("BankId.Merchant.SubID", "BankId.Merchant.SubID")
+                    @Html.TextBoxFor(m => m.SubId, new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-xs-3">
+                    @Html.Label("BankId.Merchant.ReturnUrl", "BankId.Merchant.ReturnUrl")
+                    @Html.TextBoxFor(m => m.ReturnUrl, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Send response request</button>
+    </form>
+</div>
+<hr />
+
+@if (!String.IsNullOrEmpty(Model.CustomError))
+{
+    <div class="row alert alert-danger" role="alert">
+        <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+        <p>Custom error: @Model.CustomError</p>
+    </div>
+}
+
+
+@if (Model.Source != null && Model.Source.IsError)
+{
+    <div class="row alert alert-danger" role="alert">
+        <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+        
+        <p>Error Code: @Model.Source.Error.ErrorCode</p>
+        <p>Message: @Model.Source.Error.ErrorMessage</p>
+        <p>Details: @Model.Source.Error.ErrorDetails</p>
+        <p>Consumer Message: @Model.Source.Error.ConsumerMessage</p>
+        <p>Suggested Action: @Model.Source.Error.SuggestedAction</p>
+
+        @if (Model.Source.Error.AdditionalInformation != null)
+        {
+            <p>SAML additional information:</p>
+            <p>Status Code 1: @Model.Source.Error.AdditionalInformation.StatusCodeFirstLevel</p>
+            <p>Status Code 2: @Model.Source.Error.AdditionalInformation.StatusCodeSecondLevel</p>
+            <p>Status Message: @Model.Source.Error.AdditionalInformation.StatusMessage</p>
+        }
+    </div>
+}
+@if (Model.Source != null && !Model.Source.IsError)
+{
+    <div class="row">
+        <p>Status:</p>
+        <pre>@Model.Source.Status</pre>
+    </div>
+    if (Model.Source.SamlResponse != null)
+    {
+        <hr />
+        <div class="row">
+            <p>Status Codes:</p>
+            <pre>StatusCodeFirstLevel = @Model.Source.SamlResponse.Status.StatusCodeFirstLevel</pre>
+            <pre>StatusCodeSecondLevel = @Model.Source.SamlResponse.Status.StatusCodeSecondLevel</pre>
+        </div>
+        <hr />
+        <div class="row">
+            <p>Attributes:</p>
+            @if (Model.Source.SamlResponse != null && Model.Source.SamlResponse.AttributeStatements.Count > 0)
+            {
+                foreach (var attribute in Model.Source.SamlResponse.AttributeStatements)
+                {
+                    <pre>@attribute.Name = @attribute.Value</pre>
+                }
+            }
+        </div>
+        <hr />
+        <div class="row">
+            <textarea readonly="true" class="form-control" rows="10">@Model.Source.RawMessage</textarea>
+        </div>
+    }
+}

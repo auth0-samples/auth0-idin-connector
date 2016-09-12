@@ -1,0 +1,43 @@
+﻿@model Auth0.IdinConnectorSample.Models.DirectoryModel
+
+@{
+    ViewBag.Title = "Directory";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Directory</h2>
+<hr />
+<div class="row">
+    <form class="form-horizontal" method="post" role="form">
+        <div class="form-group">
+            <div class="col-xs-5">
+                @Html.Label("BankId.Acquirer.DirectoryUrl", "BankId.Acquirer.DirectoryUrl")
+                @Html.TextBoxFor(m => m.DirectoryUrl, new { @class = "form-control" })
+            </div>
+        </div>
+        <button type="button" class="btn btn-danger" data-toggle="collapse" data-target="#demo">Toggle more options</button>
+        <div id="demo" class="collapse">
+            <div class="form-group">
+                <div class="col-xs-3">
+                    @Html.Label("BankId.Merchant.MerchantID", "BankId.Merchant.MerchantID")
+                    @Html.TextBoxFor(m => m.MerchantId, new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-xs-3">
+                    @Html.Label("BankId.Merchant.SubID", "BankId.Merchant.SubID")
+                    @Html.TextBoxFor(m => m.SubId, new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-xs-3">
+                    @Html.Label("BankId.Merchant.ReturnUrl", "BankId.Merchant.ReturnUrl")
+                    @Html.TextBoxFor(m => m.ReturnUrl, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Send directory request</button>
+    </form>
+</div>
+<hr />

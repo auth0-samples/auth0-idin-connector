@@ -1,0 +1,48 @@
+﻿@model Auth0.IdinConnectorSample.Models.StatusModel
+
+@{
+    ViewBag.Title = "GetResponse";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>GetResponse</h2>
+<hr />
+<div class="row">
+    <form class="form-horizontal" method="post" role="form">
+        <div class="form-group">
+            <div class="col-xs-5">
+                @Html.Label("BankId.Acquirer.StatusUrl", "BankId.Acquirer.StatusUrl")
+                @Html.TextBoxFor(m => m.StatusUrl, new { @class = "form-control" })
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-xs-3">
+                @Html.Label("TransactionId", "TransactionId")
+                @Html.TextBoxFor(m => m.TransactionId, new { @class = "form-control" })
+            </div>
+        </div>
+        <button type="button" class="btn btn-danger" data-toggle="collapse" data-target="#demo">Toggle more options</button>
+        <div id="demo" class="collapse">
+            <div class="form-group">
+                <div class="col-xs-3">
+                    @Html.Label("BankId.Merchant.MerchantID", "BankId.Merchant.MerchantID")
+                    @Html.TextBoxFor(m => m.MerchantId, new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-xs-3">
+                    @Html.Label("BankId.Merchant.SubID", "BankId.Merchant.SubID")
+                    @Html.TextBoxFor(m => m.SubId, new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-xs-3">
+                    @Html.Label("BankId.Merchant.ReturnUrl", "BankId.Merchant.ReturnUrl")
+                    @Html.TextBoxFor(m => m.ReturnUrl, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Send response request</button>
+    </form>
+</div>
+<hr />

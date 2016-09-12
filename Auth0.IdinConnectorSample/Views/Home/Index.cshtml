@@ -1,0 +1,18 @@
+﻿@{
+    ViewBag.Title = "Home";
+}
+
+<div class="jumbotron">
+    <h1>Auth0 iDIN Connector Sample</h1>
+    <p class="lead">This is a sample website that will integrate an iDIN provider with Auth0.</p>
+    <p>
+        The website acts as a RP (relying party) to iDIN as well as an OAuth2 Authorization Server to Auth0 to provide this integration.
+        Please see the README included with the source code for more information on the OAuth2 endpoints.
+    </p>
+    <p>You can also use the configuration of this website to perform the following iDIN RP actions against the iDIN provider:</p>
+    <p>
+        @Html.ActionLink("Directory »", "Directory", "BankId", new { area = "" }, new { @class = "btn btn-primary btn-lg" })
+        @Html.ActionLink("Authenticate »", "AuthenticationRequest", "BankId", new { area = "" }, new { @class = "btn btn-primary btn-lg" })
+        @Html.ActionLink("Response »", "GetResponse", "BankId", new { area = "" }, new { @class = "btn btn-primary btn-lg" })
+    </p>
+</div>
