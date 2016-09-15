@@ -1,0 +1,226 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "siteName": {
+      "type": "string"
+    },
+    "hostingPlanName": {
+      "type": "string"
+    },
+    "sku": {
+      "type": "string",
+      "allowedValues": [
+        "Free",
+        "Shared",
+        "Basic",
+        "Standard"
+      ],
+      "defaultValue": "Free"
+    },
+    "workerSize": {
+      "type": "string",
+      "allowedValues": [
+        "0",
+        "1",
+        "2"
+      ],
+      "defaultValue": "0"
+    },
+    "repoUrl": {
+      "type": "string"
+    },
+    "branch": {
+      "type": "string"
+    },
+
+    "AcquirerId": {
+      "type": "string",
+      "minLength": 4,
+      "maxLength": 4
+    },
+    "MerchantId": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 10
+    },
+    "DirectoryUrl": {
+      "type": "string",
+      "minLength": 1
+    },
+    "TransactionUrl": {
+      "type": "string",
+      "minLength": 1
+    },
+    "StatusUrl": {
+      "type": "string",
+      "minLength": 1
+    },
+
+    "MerchantCertificate": {
+      "type": "securestring",
+      "minLength": 1
+    },
+    "MerchantCertificatePassword": {
+      "type": "securestring",
+      "defaultValue": ""
+    },
+    "AcquirerCertificate": {
+      "type": "string",
+      "minLength": 1
+    },
+    "SamlCertificateFormatType": {
+      "type": "string",
+      "allowedValues": [
+        "Base64String",
+        "CertKey"
+      ],
+      "defaultValue": "CertKey"
+    },
+    "SamlCertificateData": {
+      "type": "string",
+      "minLength": 1,
+      "defaultValue": "BankId.Merchant.Certificate"
+    },
+
+    "Auth0IdinConnectorClientId": {
+      "type": "string",
+      "minLength": 1,
+      "defaultValue": "1a2b3c4d5e"
+    },
+    "Auth0IdinConnectorClientSecret": {
+      "type": "string",
+      "minLength": 1,
+      "defaultValue": "f00bar42!"
+    },
+    "Auth0Domain": {
+      "type": "string",
+      "minLength": 1
+    },
+
+    "RedisConnectionString": {
+      "type": "securestring",
+      "minLength": 1
+    }
+  },
+  "variables": {
+  },
+  "resources": [
+    {
+      "name": "[parameters('hostingPlanName')]",
+      "type": "Microsoft.Web/serverfarms",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2014-06-01",
+      "dependsOn": [ ],
+      "tags": {
+        "displayName": "ConnectorPlan"
+      },
+      "properties": {
+        "name": "[parameters('hostingPlanName')]",
+        "sku": "[parameters('sku')]",
+        "workerSize": "[parameters('workerSize')]",
+        "numberOfWorkers": 1
+      }
+    },
+    {
+      "name": "[parameters('siteName')]",
+      "type": "Microsoft.Web/sites",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-08-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]"
+      ],
+      "tags": {
+        "[concat('hidden-related:', resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName')))]": "Resource",
+        "displayName": "[parameters('siteName')]"
+      },
+      "properties": {
+        "name": "[parameters('siteName')]",
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]",
+        "siteConfig": {
+          "phpVersion": "off",
+          "httpLoggingEnabled": true,
+          "logsDirectorySizeLimit": 40,
+          "appSettings": [
+            {
+              "Name": "BankId.Merchant.AcquirerID",
+              "Value": "[parameters('AcquirerId')]"
+            },
+            {
+              "Name": "BankId.Merchant.MerchantID",
+              "Value": "[parameters('MerchantId')]"
+            },
+            {
+              "Name": "BankId.Merchant.ReturnUrl",
+              "Value": "[concat('https://', parameters('siteName'), '.azurewebsites.net/oauth2/callback')]"
+            },
+            {
+              "Name": "BankId.Acquirer.DirectoryUrl",
+              "Value": "[parameters('DirectoryUrl')]"
+            },
+            {
+              "Name": "BankId.Acquirer.TransactionUrl",
+              "Value": "[parameters('TransactionUrl')]"
+            },
+            {
+              "Name": "BankId.Acquirer.StatusUrl",
+              "Value": "[parameters('StatusUrl')]"
+            },
+
+            {
+              "Name": "BankId.Merchant.Certificate{Base64String}",
+              "Value": "[parameters('MerchantCertificate')]"
+            },
+            {
+              "Name": "BankId.Merchant.Certificate{Password}",
+              "Value": "[parameters('MerchantCertificatePassword')]"
+            },
+            {
+              "Name": "BankId.RoutingService.Certificate{Base64String}",
+              "Value": "[parameters('AcquirerCertificate')]"
+            },
+            {
+              "Name": "[concat('BankId.SAML.Certificate{', parameters('SamlCertificateFormatType'), '}')]",
+              "Value": "[parameters('SamlCertificateData')]"
+            },
+
+            {
+              "Name": "Auth0IdinConnectorClientId",
+              "Value": "[parameters('Auth0IdinConnectorClientId')]"
+            },
+            {
+              "Name": "Auth0IdinConnectorClientSecret",
+              "Value": "[parameters('Auth0IdinConnectorClientSecret')]"
+            },
+            {
+              "Name": "Auth0IdinConnectorClientAllowedCallbackUrl",
+              "Value": "[concat('https://', parameters('Auth0Domain'), '/login/callback')]"
+            },
+
+            {
+              "Name": "RedisConnectionString",
+              "Value": "[parameters('RedisConnectionString')]"
+            }
+          ]
+        }
+      },
+      "resources": [
+        {
+          "apiVersion": "2015-08-01",
+          "name": "web",
+          "type": "sourcecontrols",
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/Sites', parameters('siteName'))]"
+          ],
+          "properties": {
+            "RepoUrl": "[parameters('repoUrl')]",
+            "branch": "[parameters('branch')]",
+            "IsManualIntegration": true
+          }
+        }
+      ]
+    }
+  ],
+  "outputs": {
+  }
+}

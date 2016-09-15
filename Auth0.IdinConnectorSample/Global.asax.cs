@@ -53,7 +53,7 @@ namespace Auth0.IdinConnectorSample
                 // create new cert object
                 try
                 {
-                    cert = password == null ?
+                    cert = string.IsNullOrEmpty(password) ?
                         new X509Certificate2(data) :
                         new X509Certificate2(data, password, X509KeyStorageFlags.MachineKeySet);
                 }

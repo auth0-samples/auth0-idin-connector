@@ -13,13 +13,13 @@ namespace Auth0.IdinConnectorSample.Controllers
 {
     public class OAuth2Controller : Controller
     {
-        private string _auth0IdinConnectorClientId = ConfigurationManager.AppSettings["auth0IdinConnectorClientId"]; 
-        private string _auth0IdinConnectorClientSecret = ConfigurationManager.AppSettings["auth0IdinConnectorClientSecret"];
-        private string _auth0IdinConnectorClientAllowedCallbackUrl = ConfigurationManager.AppSettings["auth0IdinConnectorClientAllowedCallbackUrl"];
+        private string _auth0IdinConnectorClientId = ConfigurationManager.AppSettings["Auth0IdinConnectorClientId"]; 
+        private string _auth0IdinConnectorClientSecret = ConfigurationManager.AppSettings["Auth0IdinConnectorClientSecret"];
+        private string _auth0IdinConnectorClientAllowedCallbackUrl = ConfigurationManager.AppSettings["Auth0IdinConnectorClientAllowedCallbackUrl"];
 
         private static Lazy<IConnectionMultiplexer> _lazyConnection = new Lazy<IConnectionMultiplexer>(() =>
         {
-            return ConnectionMultiplexer.Connect(ConfigurationManager.AppSettings["redis_connection_string"]);
+            return ConnectionMultiplexer.Connect(ConfigurationManager.AppSettings["RedisConnectionString"]);
         });
         private static IConnectionMultiplexer _connection
         {
