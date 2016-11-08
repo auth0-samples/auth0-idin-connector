@@ -33,7 +33,7 @@ namespace Auth0.IdinConnectorSample.Controllers
             query["issuer_id"] = issuerId;
             uri.Query = query.ToString();
 
-            return uri.Uri.ToString();
+            return uri.Path + uri.Query;
         }
 
         // GET: /oauth2/authorize
