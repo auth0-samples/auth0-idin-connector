@@ -131,9 +131,13 @@ When an authentication is performed in Auth0 that uses a Custom Social Connectio
 
 ### Redis
 
-The iDIN Connector uses Redis to store session state between requests in an authentication flow. In your Azure account you will want to create a new Redis cache resource. For the purposes of this sample, setting up a free [Azure Redis Cache by Microsoft](https://azure.microsoft.com/en-us/services/cache/) instance will suffice.
+The iDIN Connector uses Redis to store session state between requests in an authentication flow. If you are deploying this service to Azure, you can easily create a new Redis cache resource. For the purposes of this sample, setting up a free [Azure Redis Cache by Microsoft](https://azure.microsoft.com/en-us/services/cache/) instance will suffice. If you deploying the iDIN Connector service on your own infrastructure (as described in the [Your Infrastructure](#your-infrastructure) section), then you will need to stand up your own Redis server as well.
 
-### Azure
+### The Service
+
+You can deploy the iDIN Connector service anywhere that can host an ASP.NET web application. We describe two options for this below:
+
+#### Azure
 
 You can deploy an instance of the iDIN Connector service itself to your own Azure account by clicking this button:
 
@@ -162,7 +166,9 @@ During the install, you will be prompted for several common Azure deployment par
 
 > NOTE: Please review the [iDIN Roles](#idin-roles) section above for proper understanding of the terms used by the iDIN-specific configuration parameters.
 
+#### Your Infrastructure
 
+To deploy an instance of the iDIN Connector service to your own server, be sure to edit the [appSettings.config](./appSettings.config) file. You can use the table in the [Azure](#azure) section above as a guide for these same settings.
 
 ### Auth0
 
