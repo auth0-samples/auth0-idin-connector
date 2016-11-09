@@ -51,6 +51,17 @@ namespace Auth0.IdinConnectorSample.Controllers
             return Redirect(uri.ToString());
         }
 
+        private JsonResult OAuth2TokenError(string error, string errorDescription)
+        {
+            Response.TrySkipIisCustomErrors = true;
+            Response.StatusCode = 400;
+            return Json(new
+            {
+                error,
+                error_description = errorDescription
+            });
+        }
+
         // GET: /oauth2/authorize
         [HttpGet]
         public async Task<ActionResult> Authorize()
@@ -227,15 +238,15 @@ namespace Auth0.IdinConnectorSample.Controllers
             // Validate client_id, client_secret, code
             if (model.client_id != _auth0IdinConnectorClientId || model.client_secret != _auth0IdinConnectorClientSecret)
             {
-                return new HttpStatusCodeResult(400, "Bad client_id or client_secret");
+                return OAuth2TokenError("invalid_client", "Bad client_id or client_secret");
             }
             if (model.grant_type != "authorization_code")
             {
-                return new HttpStatusCodeResult(400, "Unsupported grant_type: " + model.grant_type);
+                return OAuth2TokenError("unsupported_grant_type", "Bad client_id or client_secret");
             }
             if (string.IsNullOrEmpty(model.code))
             {
-                return new HttpStatusCodeResult(400, "Missing required parameter: code");
+                return OAuth2TokenError("invalid_request", "Missing required parameter: code");
             }
 
             // Fetch callback cache (state & profile)
@@ -243,7 +254,7 @@ namespace Auth0.IdinConnectorSample.Controllers
             string callbackJson = await cache.StringGetAsync(codeKey);
             if (callbackJson == null)
             {
-                return new HttpStatusCodeResult(400, "Unknown code: " + model.code);
+                return OAuth2TokenError("invalid_grant", "Invalid authorization code");
             }
             
             // Delete authorization code because it's single-use
@@ -254,7 +265,7 @@ namespace Auth0.IdinConnectorSample.Controllers
             // Validate redirect_uri
             if (model.redirect_uri != callbackCache.RedirectUri)
             {
-                return new HttpStatusCodeResult(400, "Invalid redirect_uri: " + model.redirect_uri);
+                return OAuth2TokenError("invalid_grant", "Invalid redirect_uri: " + model.redirect_uri);
             }
 
             // Create access_token and save profile to cache
