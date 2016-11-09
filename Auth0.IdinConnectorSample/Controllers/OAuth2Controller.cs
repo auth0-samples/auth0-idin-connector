@@ -198,14 +198,39 @@ namespace Auth0.IdinConnectorSample.Controllers
             var communicator = new Communicator();
             var statusRequest = new StatusRequest(transactionId);
 
-            var statusResponse = await Task.Run(() => communicator.GetResponse(statusRequest));
-            if (statusResponse.IsError)
+            // attempt to get IDIN response with retries
+            StatusResponse statusResponse = null;
+            var retries = 0;
+            var done = false;
+            while (!done)
             {
-                return OAuth2AuthorizationError(authorizeCache.RedirectUri, authorizeCache.State, "server_error", "Error obtaining IDIN authentication transaction status: " + statusResponse.Error.ErrorMessage);
-            }
-            if (statusResponse.Status != "Success")
-            {
-                return OAuth2AuthorizationError(authorizeCache.RedirectUri, authorizeCache.State, "access_denied", "IDIN transaction did not return a successful status. Status = " + statusResponse.Status);
+                statusResponse = await Task.Run(() => communicator.GetResponse(statusRequest));
+                if (statusResponse.IsError)
+                {
+                    return OAuth2AuthorizationError(authorizeCache.RedirectUri, authorizeCache.State, "server_error", "Error obtaining IDIN authentication transaction status: " + statusResponse.Error.ErrorMessage);
+                }
+                if (statusResponse.Status == "Open")
+                {
+                    retries++;
+                    if (retries == 5)
+                    {
+                        // max retries met
+                        return OAuth2AuthorizationError(authorizeCache.RedirectUri, authorizeCache.State, "access_denied", "IDIN transaction did not return a successful status, even after performing " + retries + " retries.");
+                    }
+                    else
+                    {
+                        // deley before next retry
+                        await Task.Delay(retries * 250);
+                    }
+                }
+                else if (statusResponse.Status == "Success")
+                {
+                    done = true;
+                }
+                else
+                {
+                    return OAuth2AuthorizationError(authorizeCache.RedirectUri, authorizeCache.State, "access_denied", "IDIN transaction did not return a successful status. Status = " + statusResponse.Status);
+                }
             }
 
             // Create code and save user profile and state to cache
