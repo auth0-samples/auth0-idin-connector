@@ -234,7 +234,7 @@ namespace Auth0.IdinConnectorSample.Controllers
                 {
                     return ServerOAuth2AuthorizationError(authorizeCache.RedirectUri, authorizeCache.State, statusResponse.Error);
                 }
-                if (statusResponse.Status == "Open")
+                if (statusResponse.Status == "Open" || statusResponse.Status == "Pending")
                 {
                     retries++;
                     if (retries == 5)
