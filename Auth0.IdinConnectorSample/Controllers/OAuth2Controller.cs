@@ -51,6 +51,31 @@ namespace Auth0.IdinConnectorSample.Controllers
             return Redirect(uri.ToString());
         }
 
+        private RedirectResult ServerOAuth2AuthorizationError(string redirectUrl, string state, ErrorResponse idinError)
+        {
+            dynamic response = new System.Dynamic.ExpandoObject();
+            response.idin_error_code = idinError.ErrorCode;
+            response.idin_error_message = idinError.ErrorMessage;
+            response.idin_error_details = idinError.ErrorDetails;
+            if (!string.IsNullOrEmpty(idinError.SuggestedAction))
+                response.idin_suggested_action = idinError.SuggestedAction;
+            if (!string.IsNullOrEmpty(idinError.ConsumerMessage))
+                response.message = idinError.ConsumerMessage;
+
+            return OAuth2AuthorizationError(redirectUrl, state, "server_error", JsonConvert.SerializeObject(response));
+        }
+
+        private RedirectResult AccessDeniedOAuth2AuthorizationError(string redirectUrl, string state, StatusResponse idinStatusResponse, string message)
+        {
+            dynamic response = new System.Dynamic.ExpandoObject();
+            response.idin_status = idinStatusResponse.Status;
+            response.message = message;
+            if (idinStatusResponse.StatusDateTimestamp != null)
+                response.idin_status_date_timestamp = idinStatusResponse.StatusDateTimestamp;
+
+            return OAuth2AuthorizationError(redirectUrl, state, "access_denied", JsonConvert.SerializeObject(response));
+        }
+
         private JsonResult OAuth2TokenError(string error, string errorDescription)
         {
             Response.TrySkipIisCustomErrors = true;
@@ -121,7 +146,7 @@ namespace Auth0.IdinConnectorSample.Controllers
                 var directoryResponse = await Task.Run(() => communicator.GetDirectory());
                 if (directoryResponse.IsError)
                 {
-                    return OAuth2AuthorizationError(redirectUri, state, "server_error", "Error getting IDIN directory: " + directoryResponse.Error.ErrorMessage);
+                    return ServerOAuth2AuthorizationError(redirectUri, state, directoryResponse.Error);
                 }
 
                 return View(new AuthorizeModel
@@ -149,7 +174,7 @@ namespace Auth0.IdinConnectorSample.Controllers
             var authenticationResponse = await Task.Run(() => communicator.NewAuthenticationRequest(authenticationRequest));
             if (authenticationResponse.IsError)
             {
-                return OAuth2AuthorizationError(redirectUri, state, "server_error", "Error performing IDIN authentication transaction: " + authenticationResponse.Error.ErrorMessage);
+                return ServerOAuth2AuthorizationError(redirectUri, state, authenticationResponse.Error);
             }
 
             // save state and redirect URI to cache
@@ -207,7 +232,7 @@ namespace Auth0.IdinConnectorSample.Controllers
                 statusResponse = await Task.Run(() => communicator.GetResponse(statusRequest));
                 if (statusResponse.IsError)
                 {
-                    return OAuth2AuthorizationError(authorizeCache.RedirectUri, authorizeCache.State, "server_error", "Error obtaining IDIN authentication transaction status: " + statusResponse.Error.ErrorMessage);
+                    return ServerOAuth2AuthorizationError(authorizeCache.RedirectUri, authorizeCache.State, statusResponse.Error);
                 }
                 if (statusResponse.Status == "Open")
                 {
@@ -215,7 +240,7 @@ namespace Auth0.IdinConnectorSample.Controllers
                     if (retries == 5)
                     {
                         // max retries met
-                        return OAuth2AuthorizationError(authorizeCache.RedirectUri, authorizeCache.State, "access_denied", "IDIN transaction did not return a successful status, even after performing " + retries + " retries.");
+                        return AccessDeniedOAuth2AuthorizationError(authorizeCache.RedirectUri, authorizeCache.State, statusResponse, "IDIN transaction did not return a successful status, even after performing " + retries + " retries.");
                     }
                     else
                     {
@@ -229,7 +254,7 @@ namespace Auth0.IdinConnectorSample.Controllers
                 }
                 else
                 {
-                    return OAuth2AuthorizationError(authorizeCache.RedirectUri, authorizeCache.State, "access_denied", "IDIN transaction did not return a successful status. Status = " + statusResponse.Status);
+                    return AccessDeniedOAuth2AuthorizationError(authorizeCache.RedirectUri, authorizeCache.State, statusResponse, "IDIN transaction did not return a successful status.");
                 }
             }
 
