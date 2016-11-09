@@ -26,9 +26,10 @@ namespace Auth0.IdinConnectorSample.Controllers
             get { return _lazyConnection.Value; }
         }
 
-        private string BuildAuthorizeWithIssuerUrl(HttpRequestBase request, string issuerId)
+        private static string BuildAuthorizeWithIssuerUrl(HttpRequestBase request, string issuerId)
         {
             var uri = new UriBuilder(request.Url);
+
             var query = HttpUtility.ParseQueryString(uri.Query);
             query["issuer_id"] = issuerId;
             uri.Query = query.ToString();
@@ -36,32 +37,24 @@ namespace Auth0.IdinConnectorSample.Controllers
             return uri.Path + uri.Query;
         }
 
+        private RedirectResult OAuth2AuthorizationError(string redirectUrl, string state, string error, string errorDescription)
+        {
+            var uri = new UriBuilder(redirectUrl);
+
+            var query = HttpUtility.ParseQueryString(uri.Query);
+            if (!string.IsNullOrEmpty(state))
+                query["state"] = state;
+            query["error"] = error;
+            query["error_description"] = errorDescription;
+            uri.Query = query.ToString();
+
+            return Redirect(uri.ToString());
+        }
+
         // GET: /oauth2/authorize
         [HttpGet]
         public async Task<ActionResult> Authorize()
         {
-            // Client ID
-            var clientId = Request.QueryString["client_id"];
-            if (string.IsNullOrEmpty(clientId))
-            {
-                return new HttpStatusCodeResult(400, "Missing required parameter: client_id");
-            }
-            if (clientId != _auth0IdinConnectorClientId)
-            {
-                return new HttpStatusCodeResult(400, "Unknown client_id: " + clientId);
-            }
-
-            // Response Type
-            var responseType = Request.QueryString["response_type"];
-            if (string.IsNullOrEmpty(responseType))
-            {
-                return new HttpStatusCodeResult(400, "Missing required parameter: response_type");
-            }
-            if (responseType != "code")
-            {
-                return new HttpStatusCodeResult(400, "Unsupported response_type: " + responseType);
-            }
-
             // Redirect URI
             var redirectUri = Request.QueryString["redirect_uri"];
             if (string.IsNullOrEmpty(redirectUri))
@@ -73,18 +66,40 @@ namespace Auth0.IdinConnectorSample.Controllers
                 // make sure redirect uri is allowed
                 var uri = new Uri(redirectUri);
                 var allowedUri = new Uri(_auth0IdinConnectorClientAllowedCallbackUrl);
-                if (uri.Scheme != allowedUri.Scheme || 
-                    uri.Authority != allowedUri.Authority || 
-                    uri.AbsolutePath != allowedUri.AbsolutePath || 
+                if (uri.Scheme != allowedUri.Scheme ||
+                    uri.Authority != allowedUri.Authority ||
+                    uri.AbsolutePath != allowedUri.AbsolutePath ||
                     uri.Port != allowedUri.Port)
                 {
                     return new HttpStatusCodeResult(400, "The redirect_uri is now allowed: " + redirectUri);
                 }
             }
-                
+
             // State
             var state = Request.QueryString["state"];
 
+            // Client ID
+            var clientId = Request.QueryString["client_id"];
+            if (string.IsNullOrEmpty(clientId))
+            {
+                return OAuth2AuthorizationError(redirectUri, state, "invalid_client", "Missing required parameter: client_id");
+            }
+            if (clientId != _auth0IdinConnectorClientId)
+            {
+                return OAuth2AuthorizationError(redirectUri, state, "invalid_client", "Unknown client_id: " + clientId);
+            }
+
+            // Response Type
+            var responseType = Request.QueryString["response_type"];
+            if (string.IsNullOrEmpty(responseType))
+            {
+                return OAuth2AuthorizationError(redirectUri, state, "invalid_request", "Missing required parameter: response_type");
+            }
+            if (responseType != "code")
+            {
+                return OAuth2AuthorizationError(redirectUri, state, "unsupported_response_type", "Unsupported response_type: " + responseType);
+            }
+                
             var communicator = new Communicator();
 
             // Issuer ID
@@ -95,7 +110,7 @@ namespace Auth0.IdinConnectorSample.Controllers
                 var directoryResponse = await Task.Run(() => communicator.GetDirectory());
                 if (directoryResponse.IsError)
                 {
-                    return new HttpStatusCodeResult(500, "Error getting IDIN directory: " + directoryResponse.Error.ErrorMessage);
+                    return OAuth2AuthorizationError(redirectUri, state, "server_error", "Error getting IDIN directory: " + directoryResponse.Error.ErrorMessage);
                 }
 
                 return View(new AuthorizeModel
@@ -123,7 +138,7 @@ namespace Auth0.IdinConnectorSample.Controllers
             var authenticationResponse = await Task.Run(() => communicator.NewAuthenticationRequest(authenticationRequest));
             if (authenticationResponse.IsError)
             {
-                return new HttpStatusCodeResult(500, "Error performing IDIN authentication transaction: " + authenticationResponse.Error.ErrorMessage);
+                return OAuth2AuthorizationError(redirectUri, state, "server_error", "Error performing IDIN authentication transaction: " + authenticationResponse.Error.ErrorMessage);
             }
 
             // save state and redirect URI to cache
@@ -175,11 +190,11 @@ namespace Auth0.IdinConnectorSample.Controllers
             var statusResponse = await Task.Run(() => communicator.GetResponse(statusRequest));
             if (statusResponse.IsError)
             {
-                return new HttpStatusCodeResult(500, "Error obtaining IDIN authentication transaction status: " + statusResponse.Error.ErrorMessage);
+                return OAuth2AuthorizationError(authorizeCache.RedirectUri, authorizeCache.State, "server_error", "Error obtaining IDIN authentication transaction status: " + statusResponse.Error.ErrorMessage);
             }
             if (statusResponse.Status != "Success")
             {
-                return new HttpStatusCodeResult(400, "IDIN transaction did not return a successful status. Status = " + statusResponse.Status);
+                return OAuth2AuthorizationError(authorizeCache.RedirectUri, authorizeCache.State, "access_denied", "IDIN transaction did not return a successful status. Status = " + statusResponse.Status);
             }
 
             // Create code and save user profile and state to cache
