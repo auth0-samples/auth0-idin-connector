@@ -1,6 +1,8 @@
 ﻿{
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+
   "contentVersion": "1.0.0.0",
+
   "parameters": {
     "siteName": {
       "type": "string"
@@ -96,16 +98,30 @@
     "Auth0Domain": {
       "type": "string",
       "minLength": 1
-    },
-
-    "RedisConnectionString": {
-      "type": "securestring",
-      "minLength": 1
     }
   },
+
   "variables": {
+    "redisCacheName": "[concat(parameters('siteName'), '-redis')]"
   },
+
   "resources": [
+    {
+      "name": "[variables('redisCacheName')]",
+      "type": "Microsoft.Cache/Redis",
+      "apiVersion": "2016-04-01",
+      "location": "[resourceGroup().location]",
+      "tags": {},
+      "properties": {
+          "redisVersion": "3.0",
+          "sku": {
+              "name": "Basic",
+              "family": "C",
+              "capacity": 0
+          },
+          "enableNonSslPort": false
+      }
+    },
     {
       "name": "[parameters('hostingPlanName')]",
       "type": "Microsoft.Web/serverfarms",
@@ -128,7 +144,8 @@
       "location": "[resourceGroup().location]",
       "apiVersion": "2015-08-01",
       "dependsOn": [
-        "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]"
+        "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]",
+        "[resourceId('Microsoft.Cache/Redis', variables('redisCacheName'))]"
       ],
       "tags": {
         "[concat('hidden-related:', resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName')))]": "Resource",
@@ -199,7 +216,7 @@
 
             {
               "Name": "RedisConnectionString",
-              "Value": "[parameters('RedisConnectionString')]"
+              "Value": "[concat(variables('redisCacheName'),'.redis.cache.windows.net,abortConnect=false,ssl=true,password=', listKeys(resourceId('Microsoft.Cache/Redis', variables('redisCacheName')), '2016-04-01').primaryKey)]"
             }
           ]
         }

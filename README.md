@@ -131,7 +131,7 @@ When an authentication is performed in Auth0 that uses a Custom Social Connectio
 
 ### Redis
 
-The iDIN Connector uses Redis to store session state between requests in an authentication flow. If you are deploying this service to Azure, you can easily create a new Redis cache resource. For the purposes of this sample, setting up a free [Azure Redis Cache by Microsoft](https://azure.microsoft.com/en-us/services/cache/) instance will suffice. If you deploying the iDIN Connector service on your own infrastructure (as described in the [Your Infrastructure](#your-infrastructure) section), then you will need to stand up your own Redis server as well.
+The iDIN Connector uses Redis to store session state between requests in an authentication flow. If you are using the "Deploy to Azure" button [below](#azure), it will automatically deploy a Redis cache for the iDIN Connector instance. If not, you will need to stand up your own Redis service and configure the `RedisConnectionString` setting in the [`appSettings.config` file](./Auth0.IdinConnectorSample/appSettings.config).
 
 ### The Service
 
@@ -158,7 +158,6 @@ During the install, you will be prompted for several common Azure deployment par
 | `SamlCertificateFormatType` / `SamlCertificateData` ** | The type and data of the SAML certificate, which is the certificate of the Merchant that contains the private key used to decrypt the SAML Response. If `SamlCertificateFormatType` is `Base64String`, then `SamlCertificateData` should be a base-64 encoded string representation of the certificate. If `SamlCertificateFormatType` is `CertKey`, then `SamlCertificateData` should contain the key of an existing certificate, which really should only be `BankId.Merchant.Certificate` (the Merchant Certificate). |
 | `Auth0IdinConnectorClientId` / `Auth0IdinConnectorClientSecret` | The client ID and secret that the Auth0 Custom Social Connection will use to communicate with the iDIN Connector. |
 | `Auth0Domain` | The Auth0 tenant domain that the iDIN Connector will be redirecting back to after authentication. |
-| `RedisConnectionString` | The connection string (obtained in the [Redis](#redis) section above) used to connect to the Redis service, which is used to manage Connector state between requests. |
 
 \* The `DirectoryUrl`, `TransactionUrl` and `StatusUrl` can be the same.
 
@@ -168,7 +167,7 @@ During the install, you will be prompted for several common Azure deployment par
 
 #### Your Infrastructure
 
-To deploy an instance of the iDIN Connector service to your own server, be sure to edit the [appSettings.config](./appSettings.config) file. You can use the table in the [Azure](#azure) section above as a guide for these same settings.
+To deploy an instance of the iDIN Connector service to your own server, be sure to edit the [appSettings.config](./appSettings.config) file. You can use the table in the [Azure](#azure) section above as a guide for these same settings. Please refer to the [Redis](#redis) section above for configuring your own instance of Redis.
 
 ### Auth0
 
