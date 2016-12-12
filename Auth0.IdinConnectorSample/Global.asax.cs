@@ -75,6 +75,10 @@ namespace Auth0.IdinConnectorSample
 
         protected void Application_Start()
         {
+            // Fix to force TLS V1.2 usage, uncomment next line if you got errors
+            // like: "Could not create SSL/TLS secure channel."
+            // System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+
             AreaRegistration.RegisterAllAreas();
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
